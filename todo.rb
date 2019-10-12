@@ -15,6 +15,7 @@ before do
 end
 
 before "/lists/:list_id*" do
+  return if params[:list_id] == 'new'
   @list_id = params[:list_id].to_i
   @list    = load_list(@list_id)
   @todos   = @list[:todos]
