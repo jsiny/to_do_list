@@ -56,8 +56,8 @@ helpers do
   def sort_todos(todos, &block)
     complete_todos, incomplete_todos = todos.partition { |todo| todo[:completed] }
 
-    incomplete_todos.each { |todo| yield todo, todos.index(todo) }
-    complete_todos.each   { |todo| yield todo, todos.index(todo) }
+    incomplete_todos.each(&block)
+    complete_todos.each(&block)
   end
 end
 
@@ -133,8 +133,18 @@ end
 # Delete an existing todo list
 post "/lists/:id/destroy" do
   @lists.delete_at(@list_id)
-  session[:success] = "The list has been deleted."
-  redirect "/lists"
+
+  if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
+    "/lists"
+  else
+    session[:success] = "The list has been deleted."
+    redirect "/lists"
+  end
+end
+
+def next_todo_id(todos)
+  max = todos.map { |todo| todo[:id] }.max || 0
+  max + 1
 end
 
 # Add a new todo to a list
@@ -145,8 +155,9 @@ post "/lists/:list_id/todos" do
   if error
     session[:error] = error
     erb :list
-  else  
-    @todos << { name: text, completed: false }
+  else
+    id = next_todo_id(@todos)
+    @todos << { id: id, name: text, completed: false }
     session[:success] = "The to-do was added."
     redirect "/lists/#{@list_id}"
   end
@@ -161,17 +172,23 @@ end
 
 # Delete a todo from a list
 post "/lists/:list_id/todos/:id/destroy" do
-  @todos.delete_at @todo_id
+  # @todos.delete_at @todo_id
+  @todos.reject! { |todo| todo[:id] == @todo_id }
 
-  session[:success] = "The to-do has been deleted."
-  redirect "/lists/#{@list_id}"
+  if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
+    status 204      # no content
+  else
+    session[:success] = "The to-do has been deleted."
+    redirect "/lists/#{@list_id}"
+  end
 end
 
 # Update the status of a todo
 post "/lists/:list_id/todos/:id" do
   is_completed = params[:completed] == "true"
+  todo = @todos.find { |todo| todo[:id] == @todo_id }
 
-  @todo[:completed] = is_completed
+  todo[:completed] = is_completed
   session[:success] = "The to-do has been updated."
   redirect "/lists/#{@list_id}"
 end
