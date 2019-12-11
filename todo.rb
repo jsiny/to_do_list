@@ -34,6 +34,10 @@ before "/lists/:list_id/todos/:todo_id*" do
   @todo    = @todos[@todo_id]
 end
 
+after do
+  @storage.disconnect
+end
+
 helpers do
   def list_complete?(list)
     todos_count(list) > 0 && todos_remaining_count(list).zero?
