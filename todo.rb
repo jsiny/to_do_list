@@ -1,10 +1,9 @@
-require "sinatra"
-require "sinatra/reloader" if development?
-require "sinatra/content_for"
-require "tilt/erubis"
+require 'sinatra'
+require 'sinatra/reloader' if development?
+require 'sinatra/content_for'
+require 'tilt/erubis'
 
-require_relative 'session_persistence'
-require_relative 'helpers'
+require_relative 'database_persistence'
 
 configure do
   enable :sessions
@@ -13,8 +12,7 @@ configure do
 end
 
 before do
-  @storage = SessionPersistence.new(session)
-  @lists = @storage.all_lists
+  @storage = DatabasePersistence.new(logger)
 end
 
 before "/lists/:list_id*" do
@@ -78,6 +76,7 @@ end
 
 # View list of lists
 get "/lists" do
+  @lists = @storage.all_lists
   erb :lists, layout: :layout
 end
 
