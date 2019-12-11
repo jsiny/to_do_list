@@ -131,7 +131,7 @@ post "/lists/:id" do
     session[:error] = error
     erb :edit_list
   else
-    @storage.update_name(@list_id, list_name)
+    @storage.update_list_name(@list_id, list_name)
     session[:success] = "The list has been updated."
     redirect "/lists/#{@list_id}"
   end

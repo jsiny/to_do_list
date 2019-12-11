@@ -21,7 +21,7 @@ class SessionPersistence
     @session[:lists].reject! { |list| list[:id] == id }
   end
 
-  def update_name(id, list_name)
+  def update_list_name(id, list_name)
     list = find_list(id)
     list[:name] = list_name
   end
