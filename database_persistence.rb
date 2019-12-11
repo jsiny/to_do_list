@@ -6,15 +6,13 @@ class DatabasePersistence
     @logger = logger
   end
 
-  def query(statement, *params)
-    @logger.info "#{statement}, #{params}"
-    @db.exec_params(statement, params)
-  end
-
   def all_lists
     result = query('SELECT * FROM lists;')
     result.map do |tuple|
-      { id: tuple['id'], name: tuple['name'], todos: [] }
+      list_id = tuple['id'].to_i
+      { id: list_id,
+        name: tuple['name'],
+        todos: find_todos_for_list(list_id) }
     end
   end
 
@@ -22,7 +20,10 @@ class DatabasePersistence
     sql = 'SELECT * FROM lists WHERE id = $1;'
     result = query(sql, id)
     tuple = result.first
-    { id: tuple['id'], name: tuple['name'], todos: [] }
+
+    { id: tuple['id'].to_i,
+      name: tuple['name'],
+      todos: find_todos_for_list(id) }
   end
 
   def create_new_list(list_name)
@@ -61,5 +62,23 @@ class DatabasePersistence
     # list[:todos].each do |todo|
     #   todo[:completed] = true
     # end
+  end
+
+  private
+
+  def find_todos_for_list(list_id)
+    sql = 'SELECT * FROM todos WHERE list_id = $1;'
+    result = query(sql, list_id)
+
+    todos = result.map do |todo_tuple|
+      { id: todo_tuple['id'].to_i,
+        name: todo_tuple['name'],
+        completed: todo_tuple['completed'] == 't' }
+    end
+  end
+
+  def query(statement, *params)
+    @logger.info "#{statement}, #{params}"
+    @db.exec_params(statement, params)
   end
 end
