@@ -11,12 +11,21 @@ class DatabasePersistence
   end
 
   def all_lists
-    result = query('SELECT * FROM lists;')
+    sql = <<~SQL
+      SELECT lists.*,
+             COUNT(todos.id) AS todos_count,
+             COUNT(NULLIF(todos.completed, true)) AS todos_remaining_count
+        FROM lists
+        JOIN todos ON todos.list_id = lists.id
+       GROUP BY lists.id;
+    SQL
+
+    result = query(sql)
     result.map do |tuple|
-      list_id = tuple['id'].to_i
-      { id: list_id,
+      { id: tuple['id'].to_i,
         name: tuple['name'],
-        todos: find_todos_for_list(list_id) }
+        todos_count: tuple['todos_count'].to_i,
+        todos_remaining_count: tuple['todos_remaining'].to_i }
     end
   end
 
