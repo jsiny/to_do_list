@@ -21,13 +21,7 @@ class DatabasePersistence
        ORDER BY lists.name;
     SQL
 
-    result = query(sql)
-    result.map do |tuple|
-      { id: tuple['id'].to_i,
-        name: tuple['name'],
-        todos_count: tuple['todos_count'].to_i,
-        todos_remaining_count: tuple['todos_remaining_count'].to_i }
-    end
+    query(sql).map { |tuple| tuple_to_list_hash(tuple) }
   end
 
   def find_list(id)
@@ -43,12 +37,7 @@ class DatabasePersistence
     SQL
 
     result = query(sql, id)
-    tuple = result.first
-
-      { id: tuple['id'].to_i,
-        name: tuple['name'],
-        todos_count: tuple['todos_count'].to_i,
-        todos_remaining_count: tuple['todos_remaining_count'].to_i }
+    tuple_to_list_hash(result.first)
   end
 
   def create_new_list(list_name)
@@ -103,5 +92,12 @@ class DatabasePersistence
   def query(statement, *params)
     @logger.info "#{statement}, #{params}"
     @db.exec_params(statement, params)
+  end
+
+  def tuple_to_list_hash(tuple)
+    { id: tuple['id'].to_i,
+      name: tuple['name'],
+      todos_count: tuple['todos_count'].to_i,
+      todos_remaining_count: tuple['todos_remaining_count'].to_i }
   end
 end
