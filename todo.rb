@@ -47,14 +47,6 @@ helpers do
     "complete" if list_complete?(list)
   end
 
-  def todos_count(list)
-    list[:todos].size
-  end
-
-  def todos_remaining_count(list)
-    list[:todos].reject { |todo| todo[:completed] }.size
-  end
-
   def sort_lists(lists, &block)
     complete_lists, incomplete_lists = lists.partition { |list| list_complete?(list) }
 

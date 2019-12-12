@@ -16,8 +16,9 @@ class DatabasePersistence
              COUNT(todos.id) AS todos_count,
              COUNT(NULLIF(todos.completed, true)) AS todos_remaining_count
         FROM lists
-        JOIN todos ON todos.list_id = lists.id
-       GROUP BY lists.id;
+        LEFT JOIN todos ON todos.list_id = lists.id
+       GROUP BY lists.id
+       ORDER BY lists.name;
     SQL
 
     result = query(sql)
@@ -25,7 +26,7 @@ class DatabasePersistence
       { id: tuple['id'].to_i,
         name: tuple['name'],
         todos_count: tuple['todos_count'].to_i,
-        todos_remaining_count: tuple['todos_remaining'].to_i }
+        todos_remaining_count: tuple['todos_remaining_count'].to_i }
     end
   end
 
