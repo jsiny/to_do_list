@@ -47,7 +47,6 @@ class DatabasePersistence
 
       { id: tuple['id'].to_i,
         name: tuple['name'],
-        todos: find_todos_for_list(id),
         todos_count: tuple['todos_count'].to_i,
         todos_remaining_count: tuple['todos_remaining_count'].to_i }
   end
@@ -88,8 +87,6 @@ class DatabasePersistence
     @db.close
   end
 
-  private
-
   def find_todos_for_list(list_id)
     sql = 'SELECT * FROM todos WHERE list_id = $1;'
     result = query(sql, list_id)
@@ -100,6 +97,8 @@ class DatabasePersistence
         completed: todo_tuple['completed'] == 't' }
     end
   end
+
+  private
 
   def query(statement, *params)
     @logger.info "#{statement}, #{params}"

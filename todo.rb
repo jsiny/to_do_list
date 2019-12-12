@@ -23,13 +23,13 @@ before "/lists/:list_id*" do
   return if params[:list_id] == 'new'
   @list_id = params[:list_id].to_i
   @list    = load_list(@list_id)
-  @todos   = @list[:todos]
+  @todos   = @storage.find_todos_for_list(@list_id)
 end
 
 before "/lists/:list_id/todos/:todo_id*" do
   @list_id = params[:list_id].to_i
   @list    = load_list(@list_id)
-  @todos   = @list[:todos]
+  @todos   = @storage.find_todos_for_list(@list_id)
   @todo_id = params[:todo_id].to_i
   @todo    = @todos[@todo_id]
 end
